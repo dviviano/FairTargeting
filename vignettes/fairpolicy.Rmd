@@ -1,0 +1,285 @@
+---
+title: "Fair Policy Targeting"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fair Policy Targeting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.height = 5,
+  fig.width = 7,
+  fig.align = "center"
+)
+```
+
+## Introduction
+
+The package `fairpolicy` implements procedures for Fair Policy Targeting in treatment allocation problems. It estimates policy rules that trade off group-specific welfare, Pareto efficiency, and fairness criteria.
+
+The package follows the framework of:
+
+Viviano, D., & Bradic, J. (2022). *Fair Policy Targeting*. arXiv:2005.12395v3.
+
+The package is intended for causal policy-learning applications with an observed outcome, a binary treatment, a binary sensitive attribute, and a set of policy covariates. It works by estimating nuisance functions, constructing doubly robust welfare scores, approximating a Pareto frontier, and solving a constrained optimization problem with Gurobi.
+
+The main user-facing function is `fit_fair_policy()`. The same workflow can also be run step by step with `estimate_nuisance()`, `compute_dr_scores()`, and `estimate_pareto_frontier()`.
+
+Policy optimization requires a working installation of Gurobi and the Gurobi R package. For this reason, the computational chunks in this vignette are marked with `eval = FALSE`.
+
+```{r, eval = FALSE}
+library(fairpolicy)
+```
+
+## Example workflow
+
+We first construct a small synthetic data set. The variable `Y` is the observed outcome, `D` is the binary treatment, `S` is the binary sensitive attribute, and `X1`, `X2` are policy covariates.
+
+```{r, eval = FALSE}
+
+n <- 120
+df <- data.frame(
+  S = rbinom(n, 1, 0.45),
+  X1 = rnorm(n),
+  X2 = rnorm(n)
+)
+
+df$D <- rbinom(
+  n,
+  1,
+  plogis(-0.2 + 0.5 * df$X1 - 0.3 * df$S)
+)
+
+tau <- 0.4 + 0.6 * df$X1 - 0.5 * df$S
+df$Y <- 1 + 0.5 * df$X1 + 0.2 * df$X2 + tau * df$D + rnorm(n)
+```
+
+We now fit a fair policy. In this first example, the policy class is `"maxscore"`, so the estimated policy is a deterministic threshold rule. The fairness criterion is demographic parity, selected with `distance = "parity"`. The capacity constraint allows treatment of at most 50 percent of the sample.
+
+```{r, eval = FALSE}
+fit <- fit_fair_policy(
+  data = df,
+  outcome = "Y",
+  treatment = "D",
+  sensitive = "S",
+  covariates = c("X1", "X2"),
+  policy_class = "maxscore",
+  distance = "parity",
+  two_directions = TRUE,
+  capacity = 0.50,
+  discretization = 10,
+  lambda = 0,
+  solver = "gurobi",
+  nuisance_method = "glm",
+  n_folds = 5,
+  seed = 123,
+  max_time = 300
+)
+```
+
+After the optimization has been solved, standard methods can be used to inspect the result.
+
+```{r, eval = FALSE}
+fit
+summary(fit)
+```
+
+The fitted object reports the policy class, optimization backend, fairness criterion, alpha grid, selected alpha value, and the selected unfairness objective. The summary additionally reports group-specific welfare summaries.
+
+Predicted treatment decisions can be obtained with `predict()`.
+
+```{r, eval = FALSE}
+head(predict(fit, newdata = df))
+head(predict(fit, newdata = df, type = "score"))
+```
+
+For deterministic maximum-score policies, `type = "response"` returns treatment indicators and `type = "score"` returns the underlying linear policy score.
+
+## Running the workflow step by step
+
+The main function `fit_fair_policy()` is a convenience wrapper around three conceptual stages: nuisance estimation, score construction, and Pareto-frontier approximation followed by fair policy optimization. This section illustrates the first three stages explicitly.
+
+### Nuisance estimation
+
+The nuisance functions include treatment propensity scores and conditional outcome functions. The default nuisance method is `"glmnet"`, which uses penalized regression. The `"glm"` method is useful for smaller examples and debugging.
+
+```{r, eval = FALSE}
+nuisance <- estimate_nuisance(
+  data = df,
+  outcome = "Y",
+  treatment = "D",
+  sensitive = "S",
+  covariates = c("X1", "X2"),
+  method = "glm",
+  cross_fit = TRUE,
+  n_folds = 5,
+  seed = 123
+)
+
+nuisance
+```
+
+The returned object has class `fairpolicy_nuisance` and stores the nuisance estimates needed for doubly robust scoring.
+
+### Doubly robust welfare scores
+
+Given the nuisance estimates, `compute_dr_scores()` constructs the group-specific welfare components used by the optimizer.
+
+```{r, eval = FALSE}
+scores <- compute_dr_scores(
+  outcome = df$Y,
+  treatment = df$D,
+  sensitive = df$S,
+  nuisance = nuisance
+)
+
+str(scores)
+```
+
+The score object contains treatment-effect scores for the sensitive group and the comparison group, baseline welfare components, propensity scores, and conditional outcome estimates.
+
+### Pareto frontier approximation
+
+The Pareto frontier is approximated over a grid of alpha values. Each alpha value defines a welfare maximization problem with a different relative weight on the two group-specific welfare objectives.
+
+```{r, eval = FALSE}
+frontier <- estimate_pareto_frontier(
+  data = df,
+  scores = scores,
+  sensitive = "S",
+  covariates = c("X1", "X2"),
+  policy_class = "maxscore",
+  capacity = 0.50,
+  alpha_grid = seq(0, 1, length.out = 10),
+  solver = "gurobi",
+  max_time = 300
+)
+
+frontier
+head(frontier$candidates)
+head(frontier$efficient_candidates)
+```
+
+The second-stage problem in `fit_fair_policy()` searches for a fair policy among policies satisfying approximate Pareto-frontier constraints.
+
+## Policy classes
+
+The argument `policy_class` chooses the class of treatment rules:
+
+```{r, eval = FALSE}
+policy_class = "maxscore"
+policy_class = "probabilistic"
+policy_class = "threshold_probabilistic"
+policy_class = "tree"
+```
+
+The maximum-score class estimates deterministic linear threshold rules. The probabilistic class estimates continuous treatment probabilities. The threshold-probabilistic class combines a threshold rule with treatment probabilities on either side of the threshold. The tree class searches over simple tree-based rules.
+
+## Fairness criteria
+
+The argument `distance` selects the unfairness criterion:
+
+```{r, eval = FALSE}
+distance = "welfare"
+distance = "relative_welfare"
+distance = "parity"
+distance = "envy"
+```
+
+For welfare, relative-welfare, and parity criteria, `two_directions = TRUE` computes absolute two-sided disparities. Setting `two_directions = FALSE` uses signed disparities. The argument `fairness` can also be used as an alternative name for `distance`.
+
+## Capacity constraints
+
+The capacity argument limits the number of treated observations. Values between 0 and 1 are interpreted as treatment fractions; values greater than 1 are interpreted as treatment counts.
+
+```{r, eval = FALSE}
+capacity = 0.40  # at most 40 percent of observations
+capacity = 150   # at most 150 observations
+```
+
+If `capacity = NULL`, the package does not impose a binding capacity limit beyond the sample size.
+
+## Alpha grid and Pareto slack
+
+The alpha grid controls the discretized Pareto-frontier approximation.
+
+```{r, eval = FALSE}
+alpha_seq <- seq(0, 1, length.out = 10)
+```
+
+In `fit_fair_policy()`, the grid can be passed through `alpha_seq`, or constructed automatically with `discretization`. The slack parameter `lambda` allows approximate Pareto feasibility in the second-stage optimization problem. Larger values permit more slack relative to the empirical frontier.
+
+## Excluding the sensitive attribute from the policy rule
+
+By default, the policy design matrix contains the sensitive attribute as the first column and then the listed covariates. In some applications, the analyst may wish to exclude the sensitive attribute from the policy rule while still using it for group-specific evaluation. This can be done with `no_parity_constraint = TRUE`.
+
+```{r, eval = FALSE}
+fit_no_sensitive_rule <- fit_fair_policy(
+  data = df,
+  outcome = "Y",
+  treatment = "D",
+  sensitive = "S",
+  covariates = c("X1", "X2"),
+  policy_class = "maxscore",
+  distance = "parity",
+  no_parity_constraint = TRUE,
+  capacity = 0.50,
+  solver = "gurobi"
+)
+```
+
+## Counterfactual predictions
+
+The fitted policy can be evaluated under counterfactual values of the sensitive attribute. This is useful for inspecting how the policy changes when the sensitive attribute is set to 0 or 1 while holding other covariates fixed.
+
+```{r, eval = FALSE}
+head(predict(fit, newdata = df, sensitive_value = 1))
+head(predict(fit, newdata = df, sensitive_value = 0))
+```
+
+## Additional parameters
+
+The following list shows common options that can be passed to `fit_fair_policy()`.
+
+```{r, eval = FALSE}
+fit <- fit_fair_policy(
+  data = df,
+  outcome = "Y",
+  treatment = "D",
+  sensitive = "S",
+  covariates = c("X1", "X2"),
+  policy_class = "maxscore",
+  distance = "parity",
+  two_directions = TRUE,
+  capacity = 0.50,
+  discretization = 10,
+  alpha_seq = NULL,
+  lambda = 0,
+  solver = "gurobi",
+  nuisance_method = "glmnet",
+  cross_fit = TRUE,
+  n_folds = 5,
+  seed = 123,
+  outcome_family = "auto",
+  trim = 1e-3,
+  cost_treatment = 0,
+  no_parity_constraint = FALSE,
+  additional_fairness_constraint = FALSE,
+  parity_constraint = ">=",
+  max_time = 300,
+  max_time_frontier = 300,
+  gurobi_params = NA,
+  numcores = 1,
+  tolerance_frontier = 10^(-3),
+  tolerance_optimization = 10^(-6),
+  open_alpha_grid = FALSE
+)
+```
+
+## Input requirements
+
+The fitting routines expect a data frame with no missing values in the variables used by the model. The treatment and sensitive attribute must be binary. They may be coded as `0`/`1`, logical values, character values with two distinct categories, or two-level factors. The outcome should be numeric, integer, or logical. By convention, `S = 1` denotes the sensitive group.

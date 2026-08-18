@@ -1,0 +1,40 @@
+Package: fairpolicy
+Title: Fair and Pareto-Optimal Policy Targeting
+Version: 0.1.0
+Authors@R: c(
+    person("Davide", "Viviano", role = "aut"),
+    person("Jelena", "Bradic", role = "aut"),
+    person("Sasha", "Stasovskyi", email = "ostasovskyi@college.harvard.edu", role = c("cre", "ctb"))
+  )
+Description: Implements Fair Policy Targeting estimators for treatment allocation
+    rules. The package estimates nuisance functions, constructs doubly robust
+    welfare scores, approximates the Pareto frontier, and solves the fair policy
+    optimization problem with Gurobi, following Viviano and Bradic (2022)
+    <doi:10.48550/arXiv.2005.12395>.
+License: file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1.0)
+Imports:
+    stats,
+    utils
+Suggests:
+    gurobi,
+    glmnet,
+    foreach,
+    doParallel,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+SystemRequirements: Gurobi Optimizer and the Gurobi R package for policy optimization.
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Collate:
+    'utils.R'
+    'optimization_core.R'
+    'nuisance.R'
+    'scores_fairness.R'
+    'pareto.R'
+    'fit.R'
+Config/roxygen2/version: 8.0.0
