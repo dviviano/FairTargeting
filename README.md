@@ -1,8 +1,8 @@
-# fairpolicy
+# FairTargeting
 
 Fair Policy Targeting for treatment allocation problems.
 
-`fairpolicy` implements tools for estimating welfare-improving policy rules under fairness and Pareto-efficiency considerations. The package follows the Fair Policy Targeting framework of Viviano and Bradic (2022) and provides routines for nuisance estimation, doubly robust welfare scoring, Pareto-frontier approximation, and Gurobi-based fair policy optimization.
+`FairTargeting` implements tools for estimating welfare-improving policy rules under fairness and Pareto-efficiency considerations. The package follows the Fair Policy Targeting framework of Viviano and Bradic (2022) and provides routines for nuisance estimation, doubly robust welfare scoring, Pareto-frontier approximation, and Gurobi-based fair policy optimization.
 
 The package is designed for settings with
 
@@ -32,13 +32,13 @@ Install the development version from GitHub:
 
 ```r
 install.packages("remotes")
-remotes::install_github("ostasovskyi/fairPolicy")
+remotes::install_github("dviviano/FairTargeting")
 ```
 
 Load the package:
 
 ```r
-library(fairpolicy)
+library(FairTargeting)
 ```
 
 The package uses base R and `stats` for lightweight utilities. Nuisance estimation with penalized regression uses `glmnet`; parallel utilities use `foreach` and `doParallel`.
@@ -64,7 +64,7 @@ library(gurobi)
 The following example creates a small synthetic data set and fits a fair policy using a maximum-score policy rule. The example uses the base-`glm` nuisance backend for readability. For larger or high-dimensional applications, use the default `nuisance_method = "glmnet"`.
 
 ```r
-library(fairpolicy)
+library(FairTargeting)
 
 n <- 120
 df <- data.frame(
@@ -177,7 +177,7 @@ nuisance <- estimate_nuisance(
 )
 ```
 
-`estimate_nuisance()` estimates treatment propensity scores, the sensitive-group probability, and conditional outcome functions. It returns an object of class `fairpolicy_nuisance`.
+`estimate_nuisance()` estimates treatment propensity scores, the sensitive-group probability, and conditional outcome functions. It returns an object of class `fairtargeting_nuisance`.
 
 ### 2. Construct doubly robust scores
 
@@ -287,15 +287,3 @@ Counterfactual sensitive-attribute predictions can be requested with `sensitive_
 head(predict(fit, newdata = df, sensitive_value = 1))
 head(predict(fit, newdata = df, sensitive_value = 0))
 ```
-
-## Input requirements
-
-The data supplied to `fit_fair_policy()` should contain:
-
-- a numeric, integer, or logical outcome variable;
-- a binary treatment indicator;
-- a binary sensitive attribute;
-- at least one policy covariate;
-- no missing values in the variables used for fitting.
-
-Binary variables may be coded as `0`/`1`, logical values, character values with two distinct categories, or two-level factors. By convention, `S = 1` denotes the sensitive group.

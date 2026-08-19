@@ -36,7 +36,7 @@ parity unfairness are computed as absolute two-sided disparities. If
 \code{"mean"} divides scalar criteria by the number of observations.}
 }
 \value{
-A list of class \code{"fairpolicy_fairness"} containing the selected
+A list of class \code{"fairtargeting_fairness"} containing the selected
 unfairness criterion and related group-specific components.
 }
 \description{

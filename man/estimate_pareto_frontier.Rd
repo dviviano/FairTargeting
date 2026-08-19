@@ -70,7 +70,7 @@ excludes 0 and 1.}
 \item{...}{Additional arguments reserved for future extensions.}
 }
 \value{
-An object of class \code{"fairpolicy_frontier"}.
+An object of class \code{"fairtargeting_frontier"}.
 }
 \description{
 Estimates the alpha-grid Pareto frontier for Fair Policy Targeting using the

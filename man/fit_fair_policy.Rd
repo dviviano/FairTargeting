@@ -155,7 +155,7 @@ search.}
 \item{...}{Reserved for future extensions.}
 }
 \value{
-An S3 object of class \code{"fairpolicy"}.
+An S3 object of class \code{"fairtargeting"}.
 }
 \description{
 Estimates a Fair Policy Targeting rule using a two-stage optimization

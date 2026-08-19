@@ -22,7 +22,7 @@
       solver_result = result$results,
       X_train = X_train
     ),
-    class = "fairpolicy_policy"
+    class = "fairtargeting_policy"
   )
 }
 
@@ -46,7 +46,7 @@
       X_train = X_train,
       selected_alpha = tree_vector[2 * num_variables + 2]
     ),
-    class = "fairpolicy_policy"
+    class = "fairtargeting_policy"
   )
 }
 
@@ -173,7 +173,7 @@
 #'   search.
 #' @param ... Reserved for future extensions.
 #'
-#' @return An S3 object of class `"fairpolicy"`.
+#' @return An S3 object of class `"fairtargeting"`.
 #' @export
 fit_fair_policy <- function(data,
                             outcome,
@@ -270,7 +270,7 @@ fit_fair_policy <- function(data,
       trim = trim,
       method = nuisance_method
     )
-  } else if (!inherits(nuisance, "fairpolicy_nuisance")) {
+  } else if (!inherits(nuisance, "fairtargeting_nuisance")) {
     .abort(
       "`nuisance` must be NULL or an object returned by `estimate_nuisance()`."
     )
@@ -398,7 +398,7 @@ fit_fair_policy <- function(data,
         X = X,
         scores = scores
       ),
-      class = "fairpolicy_frontier"
+      class = "fairtargeting_frontier"
     )
 
     selected_alpha <- policy$selected_alpha
@@ -529,7 +529,7 @@ fit_fair_policy <- function(data,
     UnFairness_bound = UnFairness_bound
   )
 
-  structure(out, class = "fairpolicy")
+  structure(out, class = "fairtargeting")
 }
 
 # Prediction methods -----------------------------------------------------------
@@ -550,8 +550,8 @@ fit_fair_policy <- function(data,
                                    sensitive_value = NULL) {
   type <- match.arg(type)
 
-  if (!inherits(policy, "fairpolicy_policy")) {
-    .abort("`policy` must be a fairpolicy policy object.")
+  if (!inherits(policy, "fairtargeting_policy")) {
+    .abort("`policy` must be a fairtargeting policy object.")
   }
 
   x <- .design_matrix(
@@ -593,7 +593,7 @@ fit_fair_policy <- function(data,
   as.numeric(score > 0)
 }
 
-#' Predict treatment policies from a fitted fairpolicy object.
+#' Predict treatment policies from a fitted fairtargeting object.
 #'
 #' @param object A fitted object returned by `fit_fair_policy()`.
 #' @param newdata Optional new data. If `NULL`, predictions are returned for the
@@ -604,17 +604,17 @@ fit_fair_policy <- function(data,
 #' @param ... Unused.
 #'
 #' @return Numeric vector of policy values or scores.
-#' @method predict fairpolicy
+#' @method predict fairtargeting
 #' @export
-predict.fairpolicy <- function(object,
+predict.fairtargeting <- function(object,
                                newdata = NULL,
                                type = c("response", "score"),
                                sensitive_value = NULL,
                                ...) {
   type <- match.arg(type)
 
-  if (!inherits(object, "fairpolicy")) {
-    .abort("`object` must have class 'fairpolicy'.")
+  if (!inherits(object, "fairtargeting")) {
+    .abort("`object` must have class 'fairtargeting'.")
   }
 
   if (is.null(newdata)) {
@@ -629,9 +629,9 @@ predict.fairpolicy <- function(object,
   )
 }
 
-#' Predict treatment policies from a fairpolicy policy object.
+#' Predict treatment policies from a fairtargeting policy object.
 #'
-#' @param object A policy object stored in a fitted `fairpolicy` object.
+#' @param object A policy object stored in a fitted `fairtargeting` object.
 #' @param newdata New data.
 #' @param type Prediction type. `"response"` returns policy values and `"score"`
 #'   returns the underlying score when available.
@@ -639,9 +639,9 @@ predict.fairpolicy <- function(object,
 #' @param ... Unused.
 #'
 #' @return Numeric vector of policy values or scores.
-#' @method predict fairpolicy_policy
+#' @method predict fairtargeting_policy
 #' @export
-predict.fairpolicy_policy <- function(object,
+predict.fairtargeting_policy <- function(object,
                                       newdata,
                                       type = c("response", "score"),
                                       sensitive_value = NULL,
@@ -658,15 +658,15 @@ predict.fairpolicy_policy <- function(object,
 
 # Print methods ----------------------------------------------------------------
 
-#' Print a fitted fairpolicy object.
+#' Print a fitted fairtargeting object.
 #'
-#' @param x A fitted `fairpolicy` object.
+#' @param x A fitted `fairtargeting` object.
 #' @param ... Unused.
 #'
 #' @return Invisibly returns `x`.
-#' @method print fairpolicy
+#' @method print fairtargeting
 #' @export
-print.fairpolicy <- function(x, ...) {
+print.fairtargeting <- function(x, ...) {
   cat("Fair Policy Targeting fit\n")
   cat("  policy class: ", x$policy_class, "\n", sep = "")
   cat("  backend:      ", x$backend %||% x$solver, "\n", sep = "")
@@ -684,15 +684,15 @@ print.fairpolicy <- function(x, ...) {
   invisible(x)
 }
 
-#' Print a fairpolicy Pareto frontier object.
+#' Print a fairtargeting Pareto frontier object.
 #'
-#' @param x A `fairpolicy_frontier` object.
+#' @param x A `fairtargeting_frontier` object.
 #' @param ... Unused.
 #'
 #' @return Invisibly returns `x`.
-#' @method print fairpolicy_frontier
+#' @method print fairtargeting_frontier
 #' @export
-print.fairpolicy_frontier <- function(x, ...) {
+print.fairtargeting_frontier <- function(x, ...) {
   cat("Fair Policy Targeting Pareto frontier\n")
   cat("  policy class: ", x$policy_class, "\n", sep = "")
   cat("  grid size:    ", length(x$alpha_grid), "\n", sep = "")
@@ -710,17 +710,17 @@ print.fairpolicy_frontier <- function(x, ...) {
 
 # Summary methods --------------------------------------------------------------
 
-#' Summarize a fitted fairpolicy object.
+#' Summarize a fitted fairtargeting object.
 #'
-#' @param object A fitted `fairpolicy` object.
+#' @param object A fitted `fairtargeting` object.
 #' @param ... Unused.
 #'
-#' @return An object of class `summary.fairpolicy`.
-#' @method summary fairpolicy
+#' @return An object of class `summary.fairtargeting`.
+#' @method summary fairtargeting
 #' @export
-summary.fairpolicy <- function(object, ...) {
-  if (!inherits(object, "fairpolicy")) {
-    .abort("`object` must have class 'fairpolicy'.")
+summary.fairtargeting <- function(object, ...) {
+  if (!inherits(object, "fairtargeting")) {
+    .abort("`object` must have class 'fairtargeting'.")
   }
 
   structure(
@@ -737,19 +737,19 @@ summary.fairpolicy <- function(object, ...) {
       no_parity_constraint = object$no_parity_constraint,
       additional_fairness_constraint = object$additional_fairness_constraint
     ),
-    class = "summary.fairpolicy"
+    class = "summary.fairtargeting"
   )
 }
 
-#' Print a fairpolicy summary object.
+#' Print a fairtargeting summary object.
 #'
-#' @param x A `summary.fairpolicy` object.
+#' @param x A `summary.fairtargeting` object.
 #' @param ... Unused.
 #'
 #' @return Invisibly returns `x`.
-#' @method print summary.fairpolicy
+#' @method print summary.fairtargeting
 #' @export
-print.summary.fairpolicy <- function(x, ...) {
+print.summary.fairtargeting <- function(x, ...) {
   cat("Summary of Fair Policy Targeting fit\n")
   cat("  policy class: ", x$policy_class, "\n", sep = "")
   cat("  backend:      ", x$backend %||% "unknown", "\n", sep = "")

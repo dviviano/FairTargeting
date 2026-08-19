@@ -38,7 +38,7 @@ compute_dr_scores(
 \item{trim}{Propensity-score trimming bound.}
 }
 \value{
-An object of class \code{"fairpolicy_scores"}.
+An object of class \code{"fairtargeting_scores"}.
 }
 \description{
 Constructs the score components used for Fair Policy Targeting, including

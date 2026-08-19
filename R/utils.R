@@ -436,7 +436,7 @@ make_alpha_grid <- function(n_grid = NULL, n = NULL, open = FALSE) {
 #' @return A data.frame with outcome `Y`, treatment `D`, sensitive attribute
 #'   `S`, and covariates `X1`, `X2`, and `X3`.
 #' @export
-simulate_fairpolicy_data <- function(n = 300, seed = NULL) {
+simulate_fairtargeting_data <- function(n = 300, seed = NULL) {
   if (!is.null(seed)) {
     set.seed(seed)
   }

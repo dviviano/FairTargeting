@@ -48,7 +48,7 @@ or \code{"binomial"}.}
 \code{glm} method.}
 }
 \value{
-An object of class \code{"fairpolicy_nuisance"}.
+An object of class \code{"fairtargeting_nuisance"}.
 }
 \description{
 Estimates propensity scores and conditional outcome means used to construct

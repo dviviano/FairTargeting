@@ -343,7 +343,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>The package <code>fairpolicy</code> implements procedures for Fair
+<p>The package <code>FairTargeting</code> implements procedures for Fair
 Policy Targeting in treatment allocation problems. It estimates policy
 rules that trade off group-specific welfare, Pareto efficiency, and
 fairness criteria.</p>
@@ -363,7 +363,7 @@ same workflow can also be run step by step with
 <p>Policy optimization requires a working installation of Gurobi and the
 Gurobi R package. For this reason, the computational chunks in this
 vignette are marked with <code>eval = FALSE</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(fairpolicy)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(FairTargeting)</span></code></pre></div>
 </div>
 <div id="example-workflow" class="section level2">
 <h2>Example workflow</h2>
@@ -454,7 +454,7 @@ debugging.</p>
 <span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>)</span>
 <span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a></span>
 <span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>nuisance</span></code></pre></div>
-<p>The returned object has class <code>fairpolicy_nuisance</code> and
+<p>The returned object has class <code>fairtargeting_nuisance</code> and
 stores the nuisance estimates needed for doubly robust scoring.</p>
 </div>
 <div id="doubly-robust-welfare-scores" class="section level3">
@@ -577,52 +577,6 @@ changes when the sensitive attribute is set to 0 or 1 while holding
 other covariates fixed.</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> df, <span class="at">sensitive_value =</span> <span class="dv">1</span>))</span>
 <span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> df, <span class="at">sensitive_value =</span> <span class="dv">0</span>))</span></code></pre></div>
-</div>
-<div id="additional-parameters" class="section level2">
-<h2>Additional parameters</h2>
-<p>The following list shows common options that can be passed to
-<code>fit_fair_policy()</code>.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">fit_fair_policy</span>(</span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  <span class="at">data =</span> df,</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="at">outcome =</span> <span class="st">&quot;Y&quot;</span>,</span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="at">treatment =</span> <span class="st">&quot;D&quot;</span>,</span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  <span class="at">sensitive =</span> <span class="st">&quot;S&quot;</span>,</span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  <span class="at">covariates =</span> <span class="fu">c</span>(<span class="st">&quot;X1&quot;</span>, <span class="st">&quot;X2&quot;</span>),</span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>  <span class="at">policy_class =</span> <span class="st">&quot;maxscore&quot;</span>,</span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>  <span class="at">distance =</span> <span class="st">&quot;parity&quot;</span>,</span>
-<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>  <span class="at">two_directions =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>  <span class="at">capacity =</span> <span class="fl">0.50</span>,</span>
-<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>  <span class="at">discretization =</span> <span class="dv">10</span>,</span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>  <span class="at">alpha_seq =</span> <span class="cn">NULL</span>,</span>
-<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a>  <span class="at">lambda =</span> <span class="dv">0</span>,</span>
-<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>  <span class="at">solver =</span> <span class="st">&quot;gurobi&quot;</span>,</span>
-<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>  <span class="at">nuisance_method =</span> <span class="st">&quot;glmnet&quot;</span>,</span>
-<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a>  <span class="at">cross_fit =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a>  <span class="at">n_folds =</span> <span class="dv">5</span>,</span>
-<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">123</span>,</span>
-<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a>  <span class="at">outcome_family =</span> <span class="st">&quot;auto&quot;</span>,</span>
-<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a>  <span class="at">trim =</span> <span class="fl">1e-3</span>,</span>
-<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a>  <span class="at">cost_treatment =</span> <span class="dv">0</span>,</span>
-<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a>  <span class="at">no_parity_constraint =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a>  <span class="at">additional_fairness_constraint =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a>  <span class="at">parity_constraint =</span> <span class="st">&quot;&gt;=&quot;</span>,</span>
-<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a>  <span class="at">max_time =</span> <span class="dv">300</span>,</span>
-<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a>  <span class="at">max_time_frontier =</span> <span class="dv">300</span>,</span>
-<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a>  <span class="at">gurobi_params =</span> <span class="cn">NA</span>,</span>
-<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a>  <span class="at">numcores =</span> <span class="dv">1</span>,</span>
-<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a>  <span class="at">tolerance_frontier =</span> <span class="dv">10</span><span class="sc">^</span>(<span class="sc">-</span><span class="dv">3</span>),</span>
-<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a>  <span class="at">tolerance_optimization =</span> <span class="dv">10</span><span class="sc">^</span>(<span class="sc">-</span><span class="dv">6</span>),</span>
-<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a>  <span class="at">open_alpha_grid =</span> <span class="cn">FALSE</span></span>
-<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a>)</span></code></pre></div>
-</div>
-<div id="input-requirements" class="section level2">
-<h2>Input requirements</h2>
-<p>The fitting routines expect a data frame with no missing values in
-the variables used by the model. The treatment and sensitive attribute
-must be binary. They may be coded as <code>0</code>/<code>1</code>,
-logical values, character values with two distinct categories, or
-two-level factors. The outcome should be numeric, integer, or logical.
-By convention, <code>S = 1</code> denotes the sensitive group.</p>
 </div>
 
 

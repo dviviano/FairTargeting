@@ -170,7 +170,7 @@ filter_pareto_frontier <- function(x,
 #'   excludes 0 and 1.
 #' @param ... Additional arguments reserved for future extensions.
 #'
-#' @return An object of class `"fairpolicy_frontier"`.
+#' @return An object of class `"fairtargeting_frontier"`.
 #' @export
 estimate_pareto_frontier <- function(data,
                                      scores,
@@ -194,7 +194,7 @@ estimate_pareto_frontier <- function(data,
                                      tolerance_frontier = 10^(-3),
                                      open_alpha_grid = FALSE,
                                      ...) {
-  if (!inherits(scores, "fairpolicy_scores")) {
+  if (!inherits(scores, "fairtargeting_scores")) {
     .abort("`scores` must be produced by `compute_dr_scores()`.")
   }
 
@@ -311,7 +311,7 @@ estimate_pareto_frontier <- function(data,
       X = X,
       scores = scores
     ),
-    class = "fairpolicy_frontier"
+    class = "fairtargeting_frontier"
   )
 }
 

@@ -51,7 +51,7 @@
 #' @param cost_treatment Treatment cost subtracted from treated outcomes.
 #' @param trim Propensity-score trimming bound.
 #'
-#' @return An object of class `"fairpolicy_scores"`.
+#' @return An object of class `"fairtargeting_scores"`.
 #' @export
 compute_dr_scores <- function(outcome,
                               treatment,
@@ -76,7 +76,7 @@ compute_dr_scores <- function(outcome,
   }
 
   if (!is.null(nuisance)) {
-    if (!inherits(nuisance, "fairpolicy_nuisance")) {
+    if (!inherits(nuisance, "fairtargeting_nuisance")) {
       .abort("`nuisance` must be an object returned by `estimate_nuisance()`.")
     }
 
@@ -187,7 +187,7 @@ compute_dr_scores <- function(outcome,
       cost_treatment = cost_treatment,
       trim = trim
     ),
-    class = "fairpolicy_scores"
+    class = "fairtargeting_scores"
   )
 }
 
@@ -210,7 +210,7 @@ estimate_group_welfare <- function(scores,
                                    policy_s0 = NULL,
                                    include_baseline = FALSE,
                                    scale = c("sum", "mean")) {
-  if (!inherits(scores, "fairpolicy_scores")) {
+  if (!inherits(scores, "fairtargeting_scores")) {
     .abort("`scores` must be produced by `compute_dr_scores()`.")
   }
 
@@ -266,7 +266,7 @@ estimate_group_welfare <- function(scores,
 #' @param scale Scale for scalar output. `"sum"` returns sample-sum criteria;
 #'   `"mean"` divides scalar criteria by the number of observations.
 #'
-#' @return A list of class `"fairpolicy_fairness"` containing the selected
+#' @return A list of class `"fairtargeting_fairness"` containing the selected
 #'   unfairness criterion and related group-specific components.
 #' @export
 compute_fairness <- function(scores,
@@ -276,7 +276,7 @@ compute_fairness <- function(scores,
                              fairness = NULL,
                              two_directions = TRUE,
                              scale = c("sum", "mean")) {
-  if (!inherits(scores, "fairpolicy_scores")) {
+  if (!inherits(scores, "fairtargeting_scores")) {
     .abort("`scores` must be produced by `compute_dr_scores()`.")
   }
   distance <- .normalize_distance(distance, fairness)
@@ -350,7 +350,7 @@ compute_fairness <- function(scores,
       welfare_relative = c(W1 = rel1 / divisor, W0 = rel0 / divisor),
       welfare_level = c(W1 = welfare1 / divisor, W0 = welfare0 / divisor)
     ),
-    class = "fairpolicy_fairness"
+    class = "fairtargeting_fairness"
   )
 }
 

@@ -361,7 +361,7 @@
 #' @param min_obs Minimum observations in a treatment-by-sensitive cell for the
 #'   `glm` method.
 #'
-#' @return An object of class `"fairpolicy_nuisance"`.
+#' @return An object of class `"fairtargeting_nuisance"`.
 #' @export
 estimate_nuisance <- function(data,
                               outcome,
@@ -486,6 +486,6 @@ estimate_nuisance <- function(data,
       ),
       call = match.call()
     ),
-    class = "fairpolicy_nuisance"
+    class = "fairtargeting_nuisance"
   )
 }

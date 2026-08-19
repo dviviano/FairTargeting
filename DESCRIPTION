@@ -1,4 +1,4 @@
-Package: fairpolicy
+Package: FairTargeting
 Title: Fair and Pareto-Optimal Policy Targeting
 Version: 0.1.0
 Authors@R: c(
@@ -37,4 +37,4 @@ Collate:
     'scores_fairness.R'
     'pareto.R'
     'fit.R'
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

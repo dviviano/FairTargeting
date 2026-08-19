@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The package `fairpolicy` implements procedures for Fair Policy Targeting in treatment allocation problems. It estimates policy rules that trade off group-specific welfare, Pareto efficiency, and fairness criteria.
+The package `FairTargeting` implements procedures for Fair Policy Targeting in treatment allocation problems. It estimates policy rules that trade off group-specific welfare, Pareto efficiency, and fairness criteria.
 
 The package follows the framework of:
 
@@ -32,7 +32,7 @@ The main user-facing function is `fit_fair_policy()`. The same workflow can also
 Policy optimization requires a working installation of Gurobi and the Gurobi R package. For this reason, the computational chunks in this vignette are marked with `eval = FALSE`.
 
 ```{r, eval = FALSE}
-library(fairpolicy)
+library(FairTargeting)
 ```
 
 ## Example workflow
@@ -123,7 +123,7 @@ nuisance <- estimate_nuisance(
 nuisance
 ```
 
-The returned object has class `fairpolicy_nuisance` and stores the nuisance estimates needed for doubly robust scoring.
+The returned object has class `fairtargeting_nuisance` and stores the nuisance estimates needed for doubly robust scoring.
 
 ### Doubly robust welfare scores
 
@@ -240,46 +240,3 @@ The fitted policy can be evaluated under counterfactual values of the sensitive 
 head(predict(fit, newdata = df, sensitive_value = 1))
 head(predict(fit, newdata = df, sensitive_value = 0))
 ```
-
-## Additional parameters
-
-The following list shows common options that can be passed to `fit_fair_policy()`.
-
-```{r, eval = FALSE}
-fit <- fit_fair_policy(
-  data = df,
-  outcome = "Y",
-  treatment = "D",
-  sensitive = "S",
-  covariates = c("X1", "X2"),
-  policy_class = "maxscore",
-  distance = "parity",
-  two_directions = TRUE,
-  capacity = 0.50,
-  discretization = 10,
-  alpha_seq = NULL,
-  lambda = 0,
-  solver = "gurobi",
-  nuisance_method = "glmnet",
-  cross_fit = TRUE,
-  n_folds = 5,
-  seed = 123,
-  outcome_family = "auto",
-  trim = 1e-3,
-  cost_treatment = 0,
-  no_parity_constraint = FALSE,
-  additional_fairness_constraint = FALSE,
-  parity_constraint = ">=",
-  max_time = 300,
-  max_time_frontier = 300,
-  gurobi_params = NA,
-  numcores = 1,
-  tolerance_frontier = 10^(-3),
-  tolerance_optimization = 10^(-6),
-  open_alpha_grid = FALSE
-)
-```
-
-## Input requirements
-
-The fitting routines expect a data frame with no missing values in the variables used by the model. The treatment and sensitive attribute must be binary. They may be coded as `0`/`1`, logical values, character values with two distinct categories, or two-level factors. The outcome should be numeric, integer, or logical. By convention, `S = 1` denotes the sensitive group.
